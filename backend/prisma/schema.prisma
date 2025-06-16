@@ -1,0 +1,230 @@
+// IQ Test Database Schema
+// Psychometric testing application with advanced features
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User management
+model User {
+  id        String   @id @default(cuid())
+  email     String?  @unique
+  username  String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Demographics for norm groups
+  age       Int?
+  gender    Gender?
+  education EducationLevel?
+  country   String?
+  language  String? @default("cs")
+
+  // User preferences
+  preferences Json?
+
+  // Relations
+  testSessions TestSession[]
+  testResults  TestResult[]
+
+  @@map("users")
+}
+
+// Test session management
+model TestSession {
+  id        String            @id @default(cuid())
+  userId    String?
+  status    TestSessionStatus @default(STARTED)
+  startedAt DateTime          @default(now())
+  endedAt   DateTime?
+  
+  // Session configuration
+  testType     String @default("full_iq")
+  timeLimit    Int?   // in seconds
+  questionIds  String[] // ordered list of question IDs
+  currentIndex Int      @default(0)
+  
+  // Anti-cheating data
+  behaviorData    Json? // mouse movements, keystrokes, etc.
+  integrityFlags  String[] // detected suspicious activities
+  tabSwitches     Int      @default(0)
+  devToolsOpened  Boolean  @default(false)
+  copyPasteEvents Int      @default(0)
+  
+  // Session metadata
+  userAgent    String?
+  ipAddress    String?
+  screenSize   String?
+  timezone     String?
+  
+  // Relations
+  user      User?        @relation(fields: [userId], references: [id])
+  responses Response[]
+  result    TestResult?
+
+  @@map("test_sessions")
+}
+
+// Question bank with psychometric properties
+model Question {
+  id          String       @id @default(cuid())
+  type        QuestionType
+  category    String       // logical_sequences, spatial, verbal, etc.
+  difficulty  Float        // IRT difficulty parameter (-3 to +3)
+  
+  // Question content
+  content     Json         // question data (text, images, options)
+  correctAnswer String     // correct answer identifier
+  explanation   String?    // explanation for the answer
+  
+  // Psychometric parameters (IRT)
+  discrimination Float @default(1.0) // a parameter
+  guessing      Float @default(0.0)  // c parameter (pseudo-guessing)
+  
+  // Question metadata
+  timeLimit     Int?    // recommended time limit in seconds
+  tags          String[] // for categorization and filtering
+  isActive      Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Usage statistics
+  timesUsed     Int @default(0)
+  averageTime   Float?
+  successRate   Float?
+  
+  // Relations
+  responses Response[]
+
+  @@map("questions")
+}
+
+// User responses to questions
+model Response {
+  id            String   @id @default(cuid())
+  sessionId     String
+  questionId    String
+  answer        String   // user's answer
+  isCorrect     Boolean
+  responseTime  Int      // in milliseconds
+  timestamp     DateTime @default(now())
+  
+  // Behavioral data for this response
+  mouseMovements Json? // tracking mouse behavior
+  keystrokes     Json? // keystroke dynamics
+  confidence     Float? // user's confidence rating (if collected)
+  
+  // Relations
+  session  TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question Question    @relation(fields: [questionId], references: [id])
+
+  @@unique([sessionId, questionId])
+  @@map("responses")
+}
+
+// Test results and scoring
+model TestResult {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  userId    String?
+  
+  // Overall scores
+  totalScore    Int
+  iqScore       Int      // standardized IQ score (mean=100, sd=15)
+  percentile    Float    // percentile ranking
+  abilityLevel  Float    // IRT theta estimate
+  standardError Float    // measurement precision
+  
+  // Category breakdowns
+  categoryScores Json    // scores by category
+  
+  // Validity indicators
+  personFitIndex    Float?  // person-fit statistic
+  responseConsistency Float? // consistency measure
+  validityFlags     String[] // any validity concerns
+  
+  // Timing statistics
+  totalTime     Int     // total test time in seconds
+  averageTime   Float   // average time per question
+  
+  // Completion status
+  isComplete    Boolean @default(false)
+  completedAt   DateTime?
+  
+  // Norm group information
+  normGroup     String? // which norm group was used
+  
+  // Relations
+  session TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User?       @relation(fields: [userId], references: [id])
+
+  @@map("test_results")
+}
+
+// Normalization data for different populations
+model NormGroup {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+  
+  // Population characteristics
+  ageRange    String? // e.g., "18-25"
+  gender      Gender?
+  education   EducationLevel?
+  country     String?
+  language    String?
+  
+  // Statistical parameters
+  sampleSize  Int
+  mean        Float @default(100.0)
+  stdDev      Float @default(15.0)
+  
+  // Percentile lookup table
+  percentiles Json // percentile to score mapping
+  
+  // Metadata
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("norm_groups")
+}
+
+// Enums
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum EducationLevel {
+  PRIMARY
+  SECONDARY
+  BACHELOR
+  MASTER
+  DOCTORATE
+  OTHER
+}
+
+enum TestSessionStatus {
+  STARTED
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+  INVALID
+}
+
+enum QuestionType {
+  NUMERICAL_SEQUENCE
+  MATRIX_REASONING
+  SPATIAL_ROTATION
+  VERBAL_ANALOGY
+  WORKING_MEMORY
+  PROCESSING_SPEED
+}
