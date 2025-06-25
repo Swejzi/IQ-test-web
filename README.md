@@ -67,22 +67,46 @@ make start
 
 ## ✅ Aktuální stav aplikace
 
-**Aplikace je úspěšně spuštěna a plně funkční!**
+**Aplikace je úspěšně spuštěna a plně funkční s pokročilými funkcemi!**
 
-### Co je hotovo:
-- ✅ Kompletní backend API s Express.js
+### 🎯 Kompletní funkcionalita:
+- ✅ **Interaktivní testování** - 6 typů otázek s vizuálními rozhraními
+- ✅ **Behavioral tracking** - Anti-cheating systém sledující chování
+- ✅ **Real-time progress** - Živé sledování postupu s časovači
+- ✅ **Adaptivní obtížnost** - Otázky se přizpůsobují výkonu
+- ✅ **Detailní výsledky** - IQ skóre, percentily, kategoriální analýza
+- ✅ **Admin panel** - Správa otázek, uživatelů a statistik
+
+### 🧠 Typy testových otázek:
+1. **Logické sekvence** - Číselné a logické postupnosti
+2. **Maticové úlohy** - Prostorové vzory a vztahy
+3. **Prostorová rotace** - 3D vizualizace a mentální rotace
+4. **Verbální analogie** - Vztahy mezi pojmy
+5. **Pracovní paměť** - Zapamatování sekvencí
+6. **Rychlost zpracování** - Rychlé rozpoznávání symbolů
+
+### 📊 Analýza výsledků:
+- **IQ skóre** s percentilním zařazením
+- **Kategoriální breakdown** s úspěšností po oblastech
+- **Časová analýza** (celkový čas, průměr, medián)
+- **Obtížnostní analýza** podle úrovní otázek
+- **Validity flags** pro detekci podvádění
+- **Doporučení** pro zlepšení
+
+### 🔧 Technické funkce:
+- ✅ Kompletní backend API s Express.js + TypeScript
 - ✅ React frontend s moderním designem
 - ✅ PostgreSQL databáze s Prisma ORM
 - ✅ Redis cache pro výkon
 - ✅ WebSocket server pro real-time komunikaci
 - ✅ Docker containerizace
 - ✅ Testovací data (57 otázek, 3 uživatelé, norm groups)
-- ✅ Základní autentizace a bezpečnost
+- ✅ JWT autentizace a bezpečnost
 - ✅ Responsive design s Tailwind CSS
 
-### Testovací účty:
-- **Admin**: admin@iqtest.com
-- **Testovací uživatel**: test@example.com
+### 👥 Testovací účty:
+- **Admin**: admin@iqtest.com / admin123
+- **Testovací uživatel**: test@example.com / test123
 - **Anonymní**: možnost testování bez registrace
 
 ## 📋 Development Commands
